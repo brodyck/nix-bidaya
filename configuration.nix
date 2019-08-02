@@ -59,6 +59,7 @@
       curl
       git
       sysstat
+      smartmontools
       tcpdump
       traceroute
       emacs26-nox

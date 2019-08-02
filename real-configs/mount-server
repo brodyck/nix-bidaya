@@ -1,24 +1,23 @@
-#!/bin/bash                                                                                           
+#!/usr/bin/env bash
 set -x
 
-### BEGIN INIT INFO                                                             
-# Provides:          mount-server                              
-# Required-Start:    $network $local_fs $remote_fs $syslog                      
-# Required-Stop:     $remote_fs $syslog                                         
-# Default-Start:     2 3 4 5                                                    
-# Default-Stop:      0 1 6                                                      
-# Short-Description: Mounts dirs                                                
-# Description:       Mounts directories for server                           
-### END INIT INFO            
-
-############################################################                                           
+### BEGIN INIT INFO
+# Provides:          mount-server
+# Required-Start:    $network $local_fs $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Mounts dirs
+# Description:       Mounts directories for server
+### END INIT INFO
+############################################################
 # All bind-mount fuckery should be left up to the descretion
-#of the container, NOT put in this file                                                                
-# That is, until i figure out if that works or not                                                     
+#of the container, NOT put in this file
+# That is, until i figure out if that works or not
 # EG: provided the containers run this file on boot:
-# if uname -a | grep -q ${containerName} ; then                                                        
+# if uname -a | grep -q ${containerName} ; then
 # dammit i wasnt expecting to think of this now, its 3AM.
-############################################################                                          
+############################################################
 PATH=/sbin:/bin:/usr/bin
 home=/disks
 diskname="storage0 raid1-0"
@@ -58,6 +57,7 @@ bindMounts(){
 ## 	mkdir -p /disks/storage0/thorin/Videos
 #	mkdir -p /shares/thorin/raid0
 #	mkdir -p /shares/thorin/storage
+	mkdir -p /shares
 	mount ${hostBindOp}rw /disks/storage0/install-files /disks/storage0/thorin/install-files
 	mount ${hostBindOp}rw /disks/storage0/videos-share /disks/storage0/thorin/videos
 	mount ${hostBindOp}rw /disks/storage0/Music /disks/storage0/thorin/music
@@ -129,10 +129,21 @@ removeDrivers(){
 }
 
 noIdle(){
-    nohup $(bash /root/harddrive-spindown 1200 /dev/sdb) &> /dev/null & # 4tb storage0
-    nohup $(bash /root/harddrive-spindown 1200 /dev/sdd) &> /dev/null & # 4tb storage0
-    nohup $(bash /root/harddrive-spindown 1200 /dev/sde) &> /dev/null & # 1tb raid0
-    nohup $(bash /root/harddrive-spindown 1200 /dev/sdf) &> /dev/null & # 1tb raid0
+    diskById="/dev/disk/by-id"
+    storage01="ata-WDC_WD40EZRZ-00WN9B0_WD-WCC4E3JH0RHX"
+    storage02="ata-ST4000DM005-2DP166_ZDH426T8"
+    raid001="ata-WDC_WD10EADX-22TDHB0_WD-WCAV5T655742"
+    raid002="ata-WDC_WD10JPCX-24UE4T0_WD-WX91A96E78DF"
+    keepaliveDisks=( ${storage01} ${storage02} ${raid001} ${raid002} )
+#    diskBy
+
+    for diskName in "${keepaliveDisks[@]}"; do
+      nohup $(bash /etc/nixos/real-configs/harddrive-spindown 1200 ${diskby}/${diskName}) &> /dev/null  
+    done
+#    nohup $(bash /root/harddrive-spindown 1200 ${diskby}/${storage01}) &> /dev/null & # 4tb storage0
+#    nohup $(bash /root/harddrive-spindown 1200 ${diskby}/${storage02}) &> /dev/null & # 4tb storage0
+#    nohup $(bash /root/harddrive-spindown 1200 ${diskby}/${raid001}) &> /dev/null & # 1tb raid0
+#    nohup $(bash /root/harddrive-spindown 1200 ${diskby}/${raid001}) &> /dev/null & # 1tb raid0
 }
 
 stop() {
@@ -166,6 +177,9 @@ case "$1" in
 	;;
     bindMounts)
 	bindMounts
+	;;
+    noIdle)
+	noIdle     
 	;;
     status)
 ###     status_of_proc $DAEMON $NAME                                                                    
