@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-set -x
-
+#set -x
 ### BEGIN INIT INFO
 # Provides:          mount-server
 # Required-Start:    $network $local_fs $remote_fs $syslog
@@ -18,7 +17,7 @@ set -x
 # if uname -a | grep -q ${containerName} ; then
 # dammit i wasnt expecting to think of this now, its 3AM.
 ############################################################
-PATH=/sbin:/bin:/usr/bin
+#PATH=/sbin:/bin:/usr/bin
 home=/disks
 diskname="storage0 raid1-0"
 bindfrom="${disks}/raid1-0/hostroot ${disks}/raid1-0"
@@ -55,9 +54,9 @@ bindMounts(){
 #	mkdir -p /disks/storage0/thorin/Books
 #	mkdir -p /disks/storage0/thorin/Music
 ## 	mkdir -p /disks/storage0/thorin/Videos
-#	mkdir -p /shares/thorin/raid0
-#	mkdir -p /shares/thorin/storage
-	mkdir -p /shares
+	mkdir -p /shares/thorin/raid0
+	mkdir -p /shares/thorin/storage
+
 	mount ${hostBindOp}rw /disks/storage0/install-files /disks/storage0/thorin/install-files
 	mount ${hostBindOp}rw /disks/storage0/videos-share /disks/storage0/thorin/videos
 	mount ${hostBindOp}rw /disks/storage0/Music /disks/storage0/thorin/music
@@ -138,7 +137,7 @@ noIdle(){
 #    diskBy
 
     for diskName in "${keepaliveDisks[@]}"; do
-      nohup $(bash /etc/nixos/real-configs/harddrive-spindown 1200 ${diskby}/${diskName}) &> /dev/null  
+      nohup $(bash /etc/nixos/real-configs/harddrive-spindown 1200 "${diskById}/${diskName}") &> /dev/null &
     done
 #    nohup $(bash /root/harddrive-spindown 1200 ${diskby}/${storage01}) &> /dev/null & # 4tb storage0
 #    nohup $(bash /root/harddrive-spindown 1200 ${diskby}/${storage02}) &> /dev/null & # 4tb storage0

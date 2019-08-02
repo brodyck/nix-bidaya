@@ -9,10 +9,10 @@
 # 6 = saturday
 
 secondsAlive=${1}
-device=${2}
+device="${2}"
 #daysOfWeek=(0 1 2 3 4 5 6)
-nowDay=$(/usr/bin/date +%w)
-nowHour=$(/usr/bin/date +%H)
+nowDay=$(date +%w)
+nowHour=$(date +%H)
 keepOnDays=(0 6) 
 keepOnHours=(7 23)
 
@@ -25,9 +25,9 @@ liveOn(){
     nOfRuns=$(( $timeSeconds / 5 ))
     runThis="smartctl -a ${device} | grep Load_Cycle_Count"
     while : ; do
-	[[ $timeSeconds == 'skip' ]] && "smartctl -a ${device} | grep Load_Cycle_Count" && sleep 5 && return 0
+	[[ $timeSeconds == 'skip' ]] && $(smartctl -a ${device} | grep Load_Cycle_Count) && sleep 5 && return 0
         [[ $nOfRuns -le 0 ]] && return 0
-	[[ $nOfRuns -gt 0 ]] && "smartctl -a ${device} | grep Load_Cycle_Count"
+	[[ $nOfRuns -gt 0 ]] && $(smartctl -a ${device} | grep Load_Cycle_Count)
 	nOfRuns=$(( $nOfRuns - 1 )) && sleep 5
     done
 }
@@ -77,6 +77,6 @@ while : ; do
     then
 	inUse ${device} && start $secondsAlive $device
     else 
-	inUse /dev/$(ls -g ${device} | grep -o -e "sd.$") && start $secondsAlive /dev/$(ls -g ${device} | grep -o -e "sd.$")
+	inUse "/dev/$(ls -g ${device} | grep "${device}" | grep -o -e "sd.$")" && start $secondsAlive "/dev/$(ls -g ${device} | grep -o -e "sd.$")"
     fi
 done 
