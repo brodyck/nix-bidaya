@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+###/usr/bin/env sh
 #set -x
 ### BEGIN INIT INFO
 # Provides:          mount-server
@@ -138,7 +138,7 @@ noIdle(){
     keepaliveDisks=( ${storage01} ${storage02} ${raid001} ${raid002} )
 
     for diskName in "${keepaliveDisks[@]}"; do
-      nohup $(bash /etc/nixos/real-configs/harddrive-spindown 1200 "${diskById}/${diskName}") &> /dev/null &
+      nohup $(/etc/nixos/real-configs/harddrive-spindown 1200 "${diskById}/${diskName}") &> /dev/null &
     done
 }
 

@@ -4,9 +4,6 @@
 
 { config, lib, pkgs, ... }:
 
-#let
-#  lan0 = "enp4s0";
-#in
 {
   imports =
     [ # Include the results of the hardware scan.
@@ -59,6 +56,7 @@
       curl
       git
       sysstat
+      gawk
       smartmontools
       tcpdump
       traceroute

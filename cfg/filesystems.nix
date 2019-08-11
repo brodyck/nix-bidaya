@@ -20,24 +20,33 @@
       "ssd0"
     ];
   };
-  systemd.services = {
-    noIdle = {
-      description = "Prevent 'green' HDDs from idling";
-      enable = true;
-      serviceConfig = {
-        # https://manpages.debian.org/jessie/systemd/systemd.service.5.en.html
-        Type = "oneshot";
-	
-      };
-      script = ''
-        sh $(./real-configs/mount-server noIdle)
-      '';
-    };
-    bindMounts = {
-      enable = true;
-      script = ''
-        sh $(./real-configs/mount-server bindMounts)
-      '';
-    };
-  };
+#  system.activationScripts = {
+#      text =
+#      ''
+#        #/etc/nixos/real-configs/mount-server noIdle
+#        /etc/nixos/real-configs/mount-server bindMounts
+#      '';
+#  };
+  
+
+#  systemd.services = {
+#    noIdle = {
+#      description = "Prevent 'green' HDDs from idling";
+#      enable = true;
+#      serviceConfig = {
+#        # https://manpages.debian.org/jessie/systemd/systemd.service.5.en.html
+#        Type = "oneshot";
+#	
+#      };
+#      script = ''
+#        sh $(./real-configs/mount-server noIdle)
+#      '';
+#    };
+#    bindMounts = {
+#      enable = true;
+#      script = ''
+#        sh $(./real-configs/mount-server bindMounts)
+#      '';
+#    };
+#  };
 }
