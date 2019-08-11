@@ -22,7 +22,13 @@
   };
   systemd.services = {
     noIdle = {
+      description = "Prevent 'green' HDDs from idling";
       enable = true;
+      serviceConfig = {
+        # https://manpages.debian.org/jessie/systemd/systemd.service.5.en.html
+        Type = "oneshot";
+	
+      };
       script = ''
         sh $(./real-configs/mount-server noIdle)
       '';
@@ -30,8 +36,8 @@
     bindMounts = {
       enable = true;
       script = ''
-      sh $(./real-configs/mount-server bindMounts)
-    '';
+        sh $(./real-configs/mount-server bindMounts)
+      '';
     };
   };
 }

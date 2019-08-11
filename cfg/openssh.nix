@@ -12,6 +12,8 @@
       openFirewall = true;
       ports = [ 22 ];
       allowSFTP = true;
+      authorizedKeysFiles = [ "/home/brody/.ssh/authorized_keys" ];
+      passwordAuthentication = false;
     };
   };
-}    
+}

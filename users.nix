@@ -19,9 +19,10 @@
         subGidRanges = [{
 	  startGid = 100000;
 	  count = 65536;
-        }];
+	}];
       };
-      thorin = {
+
+     thorin = {
         name = "thorin";
         description = "Not an admin";
 	shell = pkgs.bash;
