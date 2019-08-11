@@ -51,8 +51,8 @@ bindMounts(){
 	mkdir -p /shares/thorin/raid0
 	mkdir -p /shares/thorin/storage
 	mount ${hostBindOp}rw /disks/storage0/install-files /disks/storage0/thorin/install-files
-	mount ${hostBindOp}rw /disks/storage0/videos-share /disks/storage0/thorin/videos
-	mount ${hostBindOp}rw /disks/storage0/Music /disks/storage0/thorin/music
+	mount ${hostBindOp}rw /disks/storage0/videos-share /disks/storage0/thorin/videos-share
+	mount ${hostBindOp}rw /disks/storage0/music /disks/storage0/thorin/music
 	mount ${hostBindOp}rw /disks/storage0/books /disks/storage0/thorin/books
 	mount ${hostBindOp}rw /disks/storage0/thorin /shares/thorin/storage
 	mount ${hostBindOp}rw /disks/raid0-0/thorin /shares/thorin/raid0

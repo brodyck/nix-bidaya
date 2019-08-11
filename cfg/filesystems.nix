@@ -1,8 +1,12 @@
 { config, lib, pkgs, ... }:
 #let
-#folders = [ "/install-files" "/videos-share" "/music" "/books";
-#mountDisks = [ "/disks/storage0" "/disks/raid0-0" ]
-#shareDirs = [ "/shares/thorin" ]
+#smbUsers = [ "thorin" ]
+#folders = [ "/install-files" "/videos-share" "/music" "/books" ];
+#storageDisk = [ "/disks/storage0" ];
+#raidDIsk = [ "/disks/raid0-0" ];
+#shareDirs = [ "/shares" ];
+#diskOptions = [ "auto" ];
+#bindMount = dirs: (user: map (x: dirs
 #mountListOfFolders = 
 #in
 
@@ -20,14 +24,9 @@
       "ssd0"
     ];
   };
-#  system.activationScripts = {
-#      text =
-#      ''
-#        #/etc/nixos/real-configs/mount-server noIdle
-#        /etc/nixos/real-configs/mount-server bindMounts
-#      '';
-#  };
-  
+
+  fileSystems = {
+    
 
 #  systemd.services = {
 #    noIdle = {
@@ -40,12 +39,6 @@
 #      };
 #      script = ''
 #        sh $(./real-configs/mount-server noIdle)
-#      '';
-#    };
-#    bindMounts = {
-#      enable = true;
-#      script = ''
-#        sh $(./real-configs/mount-server bindMounts)
 #      '';
 #    };
 #  };
