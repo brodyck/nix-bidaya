@@ -1,10 +1,14 @@
 { config, lib, pkgs, ... }:
 
 {
+  imports = [
+    ./gpu-passthrough.nix
+  ];
   environment = {
     systemPackages = with pkgs; [
       libvirt
       qemu_kvm
+      win-qemu
       lxd
       docker
       docker-compose

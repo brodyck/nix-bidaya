@@ -1,4 +1,4 @@
-###/usr/bin/env sh
+#!/usr/bin/env bash
 #set -x
 ### BEGIN INIT INFO
 # Provides:          mount-server
@@ -54,8 +54,8 @@ bindMounts(){
 	mount ${hostBindOp}rw /disks/storage0/videos-share /disks/storage0/thorin/videos-share
 	mount ${hostBindOp}rw /disks/storage0/music /disks/storage0/thorin/music
 	mount ${hostBindOp}rw /disks/storage0/books /disks/storage0/thorin/books
-	mount ${hostBindOp}rw /disks/storage0/thorin /shares/thorin/storage
-	mount ${hostBindOp}rw /disks/raid0-0/thorin /shares/thorin/raid0
+	mount ${hostBindOp}rw /disks/storage0/thorin /shares/thorin/storage0
+	mount ${hostBindOp}rw /disks/raid0-0/thorin /shares/thorin/raid0-0
     fi
     
 #    if mount | grep "/disks/thorin" ; then : ;
@@ -106,26 +106,34 @@ loadModules(){
     #sysctl vm.nr_hugepages=8192
 #}
 
-resetGPU(){
+vfioGPU(){
     # This I need because of BIOS/AMD bugs
-    echo "1" > "/sys/bus/pci/devices/0000:23:00.0/remove"
-    echo "1" > "/sys/bus/pci/devices/0000:23:00.1/remove"
-    echo "1" > /sys/bus/pci/rescan
+#    echo "1" > "/sys/bus/pci/devices/0000:06:00.0/remove"
+#    echo "1" > "/sys/bus/pci/devices/0000:06:00.1/remove"
+#    echo "1" > /sys/bus/pci/rescan
     echo "1002 67df" > /sys/bus/pci/drivers/vfio-pci/new_id
-    echo "0000:23:00.0" > /sys/bus/pci/devices/0000:23:00.0/driver/unbind
-    echo "0000:23:00.0" > /sys/bus/pci/drivers/vfio-pci/bind
-    echo "1002 67df" > /sys/bus/pci/drivers/vfio-pci/remove_id
-    
-    echo "1002 aaf0" > /sys/bus/pci/drivers/vfio-pci/new_id
-    echo "0000:23:00.1" > /sys/bus/pci/devices/0000:23:00.1/driver/unbind
-    echo "0000:23:00.1" > /sys/bus/pci/drivers/vfio-pci/bind
-    echo "1002 aaf0" > /sys/bus/pci/drivers/vfio-pci/remove_id
+    echo "1002 aaf0" > /sys/bus/pci/drivers/vfio-pci/new_id    
+    echo "0000:06:00.0" > /sys/bus/pci/devices/0000:06:00.0/driver/unbind
+    echo "0000:06:00.1" > /sys/bus/pci/devices/0000:06:00.1/driver/unbind    
+    echo "0000:06:00.0" > /sys/bus/pci/drivers/vfio-pci/bind
+    echo "0000:06:00.1" > /sys/bus/pci/drivers/vfio-pci/bind    
+#    echo "1002 67df" > /sys/bus/pci/drivers/vfio-pci/remove_id
+#    echo "1002 aaf0" > /sys/bus/pci/drivers/vfio-pci/remove_id
+}
+
+amdGPU(){
+    echo "1002 67df" > /sys/bus/pci/drivers/amdgpu/new_id
+    echo "1002 aaf0" > /sys/bus/pci/drivers/snd_hda_intel/new_id
+    echo "0000:06:00.0" > /sys/bus/pci/devices/0000:06:00.0/driver/unbind
+    echo "0000:06:00.1" > /sys/bus/pci/devices/0000:06:00.1/driver/unbind
+    echo "0000:06:00.0" > /sys/bus/pci/drivers/amdgpu/bind
+    echo "0000:06:00.1" > /sys/bus/pci/drivers/snd_hda_intel/bind
 }
 
 removeDrivers(){
     # guess i could be using 'override'
-    echo "0000:23:00.0" > /sys/bus/pci/devices/0000:23:00.0/driver/unbind
-    echo "0000:23:00.1" > /sys/bus/pci/devices/0000:23:00.1/driver/unbind
+    echo "0000:06:00.0" > /sys/bus/pci/devices/0000:06:00.0/driver/unbind
+    echo "0000:06:00.1" > /sys/bus/pci/devices/0000:06:00.1/driver/unbind
 }
 
 noIdle(){
@@ -141,6 +149,7 @@ noIdle(){
       nohup $(/etc/nixos/real-configs/harddrive-spindown 1200 "${diskById}/${diskName}") &> /dev/null &
     done
 }
+
 
 stop() {
     #obsolete
@@ -171,8 +180,12 @@ case "$1" in
 	restart
 	;;
 
-    resetGPU)
-        resetGPU
+    vfioGPU)
+        vfioGPU
+	;;
+    
+    amdGPU)
+        amdGPU
 	;;
     
     bindMounts)

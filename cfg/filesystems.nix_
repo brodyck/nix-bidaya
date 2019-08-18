@@ -1,0 +1,70 @@
+{ config, lib, pkgs, ... }:
+#let
+smbUsers = [ "thorin" ]
+dataFolders = [ "install-files" "videos-share" "music" "books" ]
+diskShareFolders = [ "raid0-0" "storage0" ]
+storageDisk = "/disks/storage0"
+raidDisk = "/disks/raid0-0"
+diskList = [ storageDisk raidDisk ]
+shareDir = "/shares"
+diskOptions = [ "auto" ]
+
+dirCreateV2 = disks: map (disk: (dirs: map (dir: disk + "/" + dir) dirs) disks)
+outputV2.1 = (dirCreateV2 diskList) folders
+
+dirCreateV1 = dirs: map (dir: (disks: map (disk) disk) + "/" + dir) dirs
+
+dirCreateV1 = disks: map (disk:) (disks) (dirs: map (dir: disk + "/" + dir) dirs)
+
+dirCreateV1 = { dirs, disk }: (map (dir: disk + "/" + dir) dirs
+	      	      	       map (disk:
+
+dirCreateV1 = disk: (dirs: map (dir: disk + "/" + dir) dirs)
+userDirsInDisk = (dirCreateV1 storageDisk) smbUsers
+userDirsInDisk
+dataDirsInDisk = dirCreateV1 { disk = storageDisk; dirs = dataFolders;}
+dataDirsInDisk
+userShareDirs = (dirCreateV1 shareDir) smbUsers
+userShareDirs
+dataDirsInShare = (dirCreateV1 userShareDirs) folders
+dataDirsInShare
+outputV1.4 = (dirCreateV1 storageDisk) folders
+
+
+
+#mountListOfFolders = 
+#in
+
+{
+  environment =	{
+    systemPackages = with pkgs; [
+      zfs
+    ];
+  };
+
+  boot.zfs = {
+    extraPools = [
+      "storage0"
+      "raid0-0"
+      "ssd0"
+    ];
+  };
+
+  fileSystems = {
+    
+
+#  systemd.services = {
+#    noIdle = {
+#      description = "Prevent 'green' HDDs from idling";
+#      enable = true;
+#      serviceConfig = {
+#        # https://manpages.debian.org/jessie/systemd/systemd.service.5.en.html
+#        Type = "oneshot";
+#	
+#      };
+#      script = ''
+#        sh $(./real-configs/mount-server noIdle)
+#      '';
+#    };
+#  };
+}

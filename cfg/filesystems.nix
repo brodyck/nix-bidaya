@@ -1,14 +1,4 @@
 { config, lib, pkgs, ... }:
-#let
-#smbUsers = [ "thorin" ]
-#folders = [ "/install-files" "/videos-share" "/music" "/books" ];
-#storageDisk = [ "/disks/storage0" ];
-#raidDIsk = [ "/disks/raid0-0" ];
-#shareDirs = [ "/shares" ];
-#diskOptions = [ "auto" ];
-#bindMount = dirs: (user: map (x: dirs
-#mountListOfFolders = 
-#in
 
 {
   environment =	{
@@ -25,7 +15,7 @@
     ];
   };
 
-  fileSystems = {
+#  fileSystems = {
     
 
 #  systemd.services = {

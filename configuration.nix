@@ -9,10 +9,9 @@
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
       ./kernel.nix      
-      ./virtualisation.nix
       ./networking.nix
       ./users.nix
-      ./program-cfg.nix
+      ./cfg.nix
     ];
 
   boot = {
@@ -20,7 +19,7 @@
     loader = {
       grub.enable = false;
       systemd-boot.enable = true;
-      timeout = -1;
+      timeout = 1;
       efi.canTouchEfiVariables = true;
     };
     supportedFilesystems = [ "zfs" ];
@@ -92,6 +91,7 @@
       nix-serve
       sysdig
       nfs-utils
+      sysfsutils
     ];
     sessionVariables = {
       EDITOR = "emacs";
