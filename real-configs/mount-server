@@ -68,6 +68,7 @@ bindMounts(){
 
 forceMountZFS(){
     # fedora bugs again (but also bugs in Alpine linux)
+    
     if mount | grep "storage0" ; then : ;
     else	
 	zfs mount storage0
@@ -113,8 +114,7 @@ vfioGPU(){
 #    echo "1" > /sys/bus/pci/rescan
     echo "1002 67df" > /sys/bus/pci/drivers/vfio-pci/new_id
     echo "1002 aaf0" > /sys/bus/pci/drivers/vfio-pci/new_id    
-    echo "0000:06:00.0" > /sys/bus/pci/devices/0000:06:00.0/driver/unbind
-    echo "0000:06:00.1" > /sys/bus/pci/devices/0000:06:00.1/driver/unbind    
+    removeDrivers
     echo "0000:06:00.0" > /sys/bus/pci/drivers/vfio-pci/bind
     echo "0000:06:00.1" > /sys/bus/pci/drivers/vfio-pci/bind    
 #    echo "1002 67df" > /sys/bus/pci/drivers/vfio-pci/remove_id
@@ -124,10 +124,15 @@ vfioGPU(){
 amdGPU(){
     echo "1002 67df" > /sys/bus/pci/drivers/amdgpu/new_id
     echo "1002 aaf0" > /sys/bus/pci/drivers/snd_hda_intel/new_id
-    echo "0000:06:00.0" > /sys/bus/pci/devices/0000:06:00.0/driver/unbind
-    echo "0000:06:00.1" > /sys/bus/pci/devices/0000:06:00.1/driver/unbind
+    removeDrivers
     echo "0000:06:00.0" > /sys/bus/pci/drivers/amdgpu/bind
     echo "0000:06:00.1" > /sys/bus/pci/drivers/snd_hda_intel/bind
+}
+
+someOtherFix(){
+    echo 0 > /sys/class/vtconsole/vtcon0/bind
+    echo 0 > /sys/class/vtconsole/vtcon1/bind
+    echo efi-framebuffer.0 > /sys/bus/platform/drivers/efi-framebuffer/unbind
 }
 
 removeDrivers(){

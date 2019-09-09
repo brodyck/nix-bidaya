@@ -4,6 +4,7 @@
 
 { config, lib, pkgs, ... }:
 
+
 {
   imports =
     [ # Include the results of the hardware scan.
@@ -12,6 +13,7 @@
       ./networking.nix
       ./users.nix
       ./cfg.nix
+      ./pkgs.nix
     ];
 
   boot = {
@@ -78,6 +80,7 @@
       lshw
       lm_sensors
       iotop
+      motion
       iptables
       dmidecode
       bc
@@ -89,6 +92,12 @@
       gnumake
       nix-bash-completions
       nix-serve
+      v4l_utils
+      nix-diff
+      nix-top
+      nix-script
+      nixops
+      nix-prefetch-git
       sysdig
       nfs-utils
       sysfsutils
@@ -97,6 +106,7 @@
       EDITOR = "emacs";
     };
   };
+
   
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
@@ -107,4 +117,5 @@
   # should.
   system.stateVersion = "19.03"; # Did you read the comment?
   nixpkgs.config.allowUnfree = true;
+  nix.autoOptimiseStore = true;
 }

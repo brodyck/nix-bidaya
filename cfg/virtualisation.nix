@@ -22,6 +22,7 @@
     libvirtd = {
       enable = true;
       #onShutDown = shutdown;
+#      qemuPackage = "qemu-4.0.0";
       qemuOvmf = true;
     };
     

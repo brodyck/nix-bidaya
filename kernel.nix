@@ -2,8 +2,9 @@
 
 {
   hardware.enableAllFirmware=true;
+  powerManagement.cpuFreqGovernor = "performance";
+
   boot = {
-#   kernelPackages = pkgs.linuxPackages_latest_hardened;
     kernelPatches = [
     # Just so everyone knows, the value of 'patch' MUST be unquoted. No exceptions.
 #      {
@@ -13,6 +14,7 @@
     ];
    
     kernelPackages = pkgs.linuxPackages;
+
     kernelModules = [
       "zfs"
     ];
@@ -33,6 +35,7 @@
       sysctl = {
         #"fs.inotify.max_user_watches" = 100000;
 	"net.ipv4.ip_forward" = 1;
+	"kernel.numa_balancing" = 0;
       };
     };
     

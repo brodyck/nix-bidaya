@@ -6,8 +6,14 @@
     hostId = "deadbeef";
     firewall = {
       enable = true;
-      #allowedTCPPorts = [ ];
-      #allowedUDPPorts = [ ];
+      allowedTCPPorts = [
+        8081
+        8082
+      ];
+      allowedUDPPorts = [
+        8081
+	8082
+      ];
       allowPing = true;
     };
     bridges = {
