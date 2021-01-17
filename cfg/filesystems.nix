@@ -3,33 +3,41 @@
 {
   environment =	{
     systemPackages = with pkgs; [
-      zfs
+#      linuxPackages_latest.zfsUnstable
+#      zfsUnstable
     ];
   };
 
-  boot.zfs = {
-    extraPools = [
-      "storage0"
-      "raid0-0"
-      "ssd0"
-    ];
-  };
-
-#  fileSystems = {
-    
-
-#  systemd.services = {
-#    noIdle = {
-#      description = "Prevent 'green' HDDs from idling";
-#      enable = true;
-#      serviceConfig = {
-#        # https://manpages.debian.org/jessie/systemd/systemd.service.5.en.html
-#        Type = "oneshot";
-#	
-#      };
-#      script = ''
-#        sh $(./real-configs/mount-server noIdle)
-#      '';
+  boot = {
+#    zfs = {
+#      enableUnstable = true;
+#      extraPools = [
+#        "storage0"
+#        "storage1"
+#        "storage2"	
+#        "ssd-raid0-0"
+#        "ssd0"
+#      ];
 #    };
+    supportedFilesystems = [ "zfs" ];
+  };
+  services.zfs = {
+    autoSnapshot = {
+      enable = true;
+      frequent = 20; # keep the latest eight 15-minute snapshots (instead of four)
+      #monthly = 1;  # keep only one monthly snapshot (instead of twelve)
+    };
+    # For some new version of NixOS
+    trim = {
+      enable = true;
+    };
+  };
+
+#  systemd.services.hddSpinUp = {
+#    description = "Keep 'green' hdds running";
+#    script = ''
+#      /etc/nixos/scripts/
+#    '';
+#    wantedBy = [ "multi-user.target" ];
 #  };
 }

@@ -1,4 +1,0 @@
-#! /usr/bin/env bash
-#emacs /etc/nixos/real-configs/motion.conf
-killall motion
-motion -c /etc/nixos/real-configs/motion.conf

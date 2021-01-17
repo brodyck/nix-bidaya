@@ -1,6 +1,7 @@
 { config, lib, pkgs, ... }:
 
-let smbconf = builtins.readFile "/etc/nixos/real-configs/smb.conf";
+let
+  smbconf = builtins.readFile "/etc/nixos/config-files/smb.conf";
 in
 {
   environment =	{
@@ -12,7 +13,8 @@ in
   services = {
     samba = {
       enable = true;
-      nsswins = true;
+      nsswins = false;
+      enableNmbd = false;
       configText = lib.mkBefore "
         ${smbconf}
       ";

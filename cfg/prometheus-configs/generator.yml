@@ -1,0 +1,171 @@
+#mtxrSystemReboot
+#mtxrUSBPowerReset
+#mtxrScriptRunCmd
+#mtxrScriptRunTable #DESCRIPTION "invisible to getnext, accesible only with get request and write premission"
+modules:
+  mikrotik-sw-r:
+    version: 3    
+    auth:
+      username: mikrotikr
+      security_level: authPriv
+      password: "!LV#brF4T3A5`ABu"
+      auth_protocol: SHA
+      priv_protocol: AES
+      priv_password: "wUfXGFp=ws@{s<5N"
+    walk:
+      - mtxrInterfaceStatsTable
+      - mtxrPOETable
+      - mtxrNeighborTable
+      - mtxrHlActiveFan
+      - mtxrHlTemperature
+      - mtxrHlProcessorTemperature
+      - mtxrHlBoardTemperature
+      - mtxrHlCpuTemperature
+      - mtxrHlSensorTemperature
+      - mtxrQueueSimpleTable
+      - interfaces
+      - hrProcessorLoad
+      - hrSystemUptime
+      - hrSystemDate
+      - hrMemorySize
+      - hrStorageTable
+      - sysUpTime      
+      - sysDescr
+      - sysLocation
+      - sysName
+      - ifDescr
+      - ifLastChange
+      - ifIndex
+      - ifHighSpeed
+      - linkDown
+      - linkUp
+      - ifPacketGroup
+      - dot1dBasePortTable
+      - dot1dBasePortEntry
+      - dot1dBasePort
+      - dot1dBasePortIfIndex
+      - dot1dBasePortDelayExceededDiscards
+      - dot1dBasePortMtuExceededDiscards
+      - dot1dStpProtocolSpecification
+      - dot1dStpPriority
+      - dot1dStpTimeSinceTopologyChange
+      - dot1dStpTopChanges
+      - dot1dStpDesignatedRoot
+      - dot1dStpRootCost
+      - dot1dStpRootPort
+      - dot1dStpHelloTime
+      - dot1dStpPortForwardTransitions
+      - dot1dStpHoldTime
+      - dot1dStpForwardDelay
+      - dot1dStpBridgeHelloTime
+      - dot1dStpBridgeHelloTime
+      - dot1dStpBridgeForwardDelay
+      - dot1dStpPortTable
+      - dot1dStpPortEntry
+      - dot1dStpPort
+      - dot1dStpPortPriority
+      - dot1dStpPortState
+      - dot1dStpPortEnable
+      - dot1dStpPortPathCost
+      - dot1dStpPortDesignatedRoot
+      - dot1dStpPortDesignatedCost
+      - dot1dStpPortDesignatedBridge
+      - dot1dStpPortDesignatedPort
+      - dot1dStpPortForwardTransitions
+      - dot1dStpPortPathCost32
+      - newRoot
+      - topologyChange
+
+    lookups:
+      - source_indexes: [ifIndex]
+        lookup: ifAlias
+      - source_indexes: [ifIndex]
+        lookup: ifDescr
+      - source_indexes: [ifIndex]
+        lookup: 1.3.6.1.2.1.31.1.1.1.1
+    overrides:
+      ifAlias:
+        ignore: true # Lookup metric
+      ifDescr:
+        ignore: true # Lookup metric
+      ifName:
+        ignore: true # Lookup metric
+      ifType:
+        type: EnumAsInfo
+
+  mikrotik-ap-r:
+    version: 3    
+    auth:
+      username: mikrotikr
+      security_level: authPriv
+      password: "!LV#brF4T3A5`ABu"
+      auth_protocol: SHA
+      priv_protocol: AES
+      priv_password: "wUfXGFp=ws@{s<5N"
+    walk:
+      - mtxrInterfaceStatsTable
+      - mtxrPOETable
+      - mtxrNeighborTable
+      - mtxrHlActiveFan
+      - mtxrHlTemperature
+      - mtxrHlProcessorTemperature
+      - mtxrHlBoardTemperature
+      - mtxrHlCpuTemperature
+      - mtxrHlSensorTemperature
+      - mtxrQueueSimpleTable
+      - interfaces
+      - hrProcessorLoad
+      - hrSystemUptime
+      - hrSystemDate
+      - hrMemorySize
+      - hrStorageTable
+      - sysUpTime      
+      - sysDescr
+      - sysLocation
+      - sysName
+      - ifDescr
+      - ifLastChange
+      - ifIndex
+      - ifHighSpeed
+      - 1.3.6.1.4.1.14988.1.1.1.3.1.2.1 # wireless tx-rate
+      - 1.3.6.1.4.1.14988.1.1.1.3.1.3.1 # rx-rate
+      - 1.3.6.1.4.1.14988.1.1.1.3.1.4.1 # ssid used
+      - 1.3.6.1.4.1.14988.1.1.1.3.1.6.1 # client-count
+      - 1.3.6.1.4.1.14988.1.1.1.3.1.7.1 # frequency
+      - 1.3.6.1.4.1.14988.1.1.1.3.1.8.1 # band
+      - 1.3.6.1.4.1.14988.1.1.1.3.1.9.1 # noise floor
+      - 1.3.6.1.4.1.14988.1.1.1.3.1.10.1 # overall-ccq
+      - 1.3.6.1.4.1.14988.1.1.1.3.1.11.1 # auth client count
+      - mtxrWlStatTable
+      - mtxrWlRtabTable
+      - mtxrWlApTable
+    lookups:
+      - source_indexes: [ifIndex]
+        lookup: ifAlias
+      - source_indexes: [ifIndex]
+        lookup: ifDescr
+      - source_indexes: [ifIndex]
+        lookup: 1.3.6.1.2.1.31.1.1.1.1
+    overrides:
+      ifAlias:
+        ignore: true # Lookup metric
+      ifDescr:
+        ignore: true # Lookup metric
+      ifName:
+        ignore: true # Lookup metric
+      ifType:
+        type: EnumAsInfo      
+      
+  mikrotik-write:
+    version: 3
+    walk:
+      - mtxrScriptRunCmd
+      - mtxrSystemReboot
+      - mtxrUSBPowerReset
+    auth:
+      username: mikrotikw
+      security_level: authPriv
+      password: 'f*fzn"Ug%~9BNuQk'
+      auth_protocol: SHA
+      priv_protocol: AES
+      priv_password: '\;qK7X,u4qd=GN9?'

@@ -2,18 +2,14 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, lib, pkgs, ... }:
-
+{ config, lib, pkgs, options, ... }:
 
 {
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
-      ./kernel.nix      
-      ./networking.nix
-      ./users.nix
       ./cfg.nix
-      ./pkgs.nix
+      ./overlays
     ];
 
   boot = {
@@ -24,13 +20,17 @@
       timeout = 1;
       efi.canTouchEfiVariables = true;
     };
-    supportedFilesystems = [ "zfs" ];
+
     tmpOnTmpfs = true;
     #cleanTmpDir = true;
   };
+#  console = {
+#    earlySetup = true;
+#  };
 
   hardware = {
     enableAllFirmware = true;
+    enableRedistributableFirmware = true;
     cpu = {
       amd = {
         updateMicrocode = true;
@@ -52,9 +52,15 @@
   # $ nix search wget
   environment = {
     systemPackages = with pkgs; [
+      parted
+      testdisk
+      neofetch
+      ffmpeg
+      screen
       bash
       wget
       curl
+      lsof
       git
       sysstat
       gawk
@@ -66,7 +72,7 @@
       unzip
       p7zip
       unrar
-      iptables
+      hping
       efibootmgr
       usbutils
       pciutils
@@ -74,7 +80,6 @@
       ranger
       w3m
       nox
-      nixops
       manpages
       #lsof
       lshw
@@ -88,6 +93,8 @@
       ascii
       diffstat
       gcc
+      glibc
+      binutils
       hdparm
       gnumake
       nix-bash-completions
@@ -101,6 +108,17 @@
       sysdig
       nfs-utils
       sysfsutils
+      wpa_supplicant
+      uucp
+      setserial
+#      mstpd
+      debootstrap
+      linuxHeaders
+      mstflint-414
+      jdk
+      file
+      tshark
+      bind
     ];
     sessionVariables = {
       EDITOR = "emacs";
@@ -115,7 +133,8 @@
 
   # You should change this only after NixOS release notes say you
   # should.
-  system.stateVersion = "19.03"; # Did you read the comment?
+  system.stateVersion = "19.09"; # Did you read the comment?
   nixpkgs.config.allowUnfree = true;
   nix.autoOptimiseStore = true;
+
 }

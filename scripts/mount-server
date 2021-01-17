@@ -1,0 +1,213 @@
+#!/usr/bin/env bash
+#set -x
+### BEGIN INIT INFO
+# Provides:          mount-server
+# Required-Start:    $network $local_fs $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Mounts dirs
+# Description:       Mounts directories for server
+### END INIT INFO
+############################################################
+# All bind-mount fuckery should be left up to the descretion
+#of the container, NOT put in this file
+# That is, until i figure out if that works or not
+# EG: provided the containers run this file on boot:
+# if uname -a | grep -q ${containerName} ; then
+# dammit i wasnt expecting to think of this now, its 3AM.
+############################################################
+#PATH=/sbin:/bin:/usr/bin
+home=/disks
+diskname="storage0 raid1-0"
+bindfrom="${disks}/raid1-0/hostroot ${disks}/raid1-0"
+bindto="/root"
+hostBindOp="--rbind -o auto,"
+brtfsOp="-o noatime,autodefrag,compress=lzo,discard,rw"
+ntfsOp="-t ntfs-3g -t ntfs-3g -o noatime,exec,autodefrag,compress=lzo,discard,rw,permissions"
+
+########################################
+# This script does waaaaaaaay too much #
+########################################
+
+start() {
+    if [[ ${HOSTNAME} = "bidaya" ]] ; then
+	forceMountZFS
+	seBools
+	# for network connections
+	sysctl -w net.ipv4.ip_forward=1
+	bindMounts	
+#	windowsVM
+	noIdle
+    fi
+}
+
+windowsVM(){
+    removeDrivers && wait
+    loadModules && wait
+#    hugepages && wait
+    virsh start win10
+}
+
+bindMounts(){
+    if mount | grep "/shares/thorin" ; then : ;
+    else
+	mkdir -p /shares/thorin/raid0-0
+	mkdir -p /shares/thorin/storage0
+	mkdir -p /shares/thorin/storage0/videos-share	
+	mount ${hostBindOp}rw /disks/storage0/install-files /disks/storage0/thorin/install-files
+	mount ${hostBindOp}rw /disks/storage0/videos-share /disks/storage0/thorin/videos-share
+	mount ${hostBindOp}rw /disks/storage0/music /disks/storage0/thorin/music
+	mount ${hostBindOp}rw /disks/storage0/books /disks/storage0/thorin/books
+	mount ${hostBindOp}rw /disks/storage0/thorin /shares/thorin/storage0
+	mount ${hostBindOp}rw /disks/raid0-0/thorin /shares/thorin/raid0-0
+    fi
+    
+#    if mount | grep "/disks/thorin" ; then : ;
+#    else
+#       # disks that will mostly be used locally
+#	mount ${ntfsOp} /dev/sdi1 /disks/thorin/hdd1
+#	mount ${ntfsOp} /dev/sdj2 /disks/thorin/hdd2		
+#    fi
+}
+
+forceMountZFS(){
+    # fedora bugs again (but also bugs in Alpine linux)
+    
+    if mount | grep "storage0" ; then : ;
+    else	
+	zfs mount storage0
+    fi
+    if mount | grep "raid0-0" ; then : ;
+    else	
+	zfs mount raid0-0
+    fi
+}
+
+seBools(){
+    #seLinux boolians. This is for fedora again. Not a bug, just didn't wanna have to remember to do this on my inevitable 3rd re-install of my server OS.
+    setsebool samba_export_all_rw on
+    setsebool samba_export_all_ro on
+    setsebool samba_share_fusefs on
+    setsebool samba_share_nfs on
+    setsebool allow_smbd_anon_write on
+    setsebool samba_create_home_dirs on
+    setsebool samba_enable_home_dirs on
+}
+
+loadModules(){
+    # I was forced to do this because of many awful bugs in Fedora    
+    modules=( "vfio" "vfio_iommu_type1" "vfio_pci" "vfio_virqfd" )
+    for module in "${modules[@]}"
+    do
+	modprobe "${module}"
+    done
+    resetGPU
+}
+
+#hugepages(){
+    # This had to be in here at one point because of Fedora bugs
+    #mount -t hugetlbfs hugetlbfs /dev/hugepages    
+    #sysctl vm.nr_hugepages=4096
+    #sysctl vm.nr_hugepages=8192
+#}
+
+vfioGPU(){
+    # This I need because of BIOS/AMD bugs
+#    echo "1" > "/sys/bus/pci/devices/0000:06:00.0/remove"
+#    echo "1" > "/sys/bus/pci/devices/0000:06:00.1/remove"
+#    echo "1" > /sys/bus/pci/rescan
+    echo "1002 67df" > /sys/bus/pci/drivers/vfio-pci/new_id
+    echo "1002 aaf0" > /sys/bus/pci/drivers/vfio-pci/new_id    
+    removeDrivers
+    echo "0000:06:00.0" > /sys/bus/pci/drivers/vfio-pci/bind
+    echo "0000:06:00.1" > /sys/bus/pci/drivers/vfio-pci/bind    
+#    echo "1002 67df" > /sys/bus/pci/drivers/vfio-pci/remove_id
+#    echo "1002 aaf0" > /sys/bus/pci/drivers/vfio-pci/remove_id
+}
+
+amdGPU(){
+    echo "1002 67df" > /sys/bus/pci/drivers/amdgpu/new_id
+    echo "1002 aaf0" > /sys/bus/pci/drivers/snd_hda_intel/new_id
+    removeDrivers
+    echo "0000:06:00.0" > /sys/bus/pci/drivers/amdgpu/bind
+    echo "0000:06:00.1" > /sys/bus/pci/drivers/snd_hda_intel/bind
+}
+
+someOtherFix(){
+    echo 0 > /sys/class/vtconsole/vtcon0/bind
+    echo 0 > /sys/class/vtconsole/vtcon1/bind
+    echo efi-framebuffer.0 > /sys/bus/platform/drivers/efi-framebuffer/unbind
+}
+
+removeDrivers(){
+    # guess i could be using 'override'
+    echo "0000:06:00.0" > /sys/bus/pci/devices/0000:06:00.0/driver/unbind
+    echo "0000:06:00.1" > /sys/bus/pci/devices/0000:06:00.1/driver/unbind
+}
+
+noIdle(){
+    # for disks that idle too fast
+    diskById="/dev/disk/by-id"
+    storage01="ata-WDC_WD40EZRZ-00WN9B0_WD-WCC4E3JH0RHX"
+    storage02="ata-ST4000DM005-2DP166_ZDH426T8"
+    raid001="ata-WDC_WD10EADX-22TDHB0_WD-WCAV5T655742"
+    raid002="ata-WDC_WD10JPCX-24UE4T0_WD-WX91A96E78DF"
+    keepaliveDisks=( ${storage01} ${storage02} ${raid001} ${raid002} )
+
+    for diskName in "${keepaliveDisks[@]}"; do
+      nohup $(/etc/nixos/scripts/harddrive-spindown 1200 "${diskById}/${diskName}") &> /dev/null &
+    done
+}
+
+
+stop() {
+    #obsolete
+    if mount | grep hostroot ; then
+	umount /root
+	for x in b d; do
+            umount -f /dev/sd${x}1;
+	done;
+    fi
+}
+
+restart_mount() {
+    stop
+    start
+}
+
+case "$1" in
+    # ended up needing to call some of these individually after boot
+    start)
+        start
+	;;
+    
+    stop)
+        stop
+	;;
+    
+    restart)
+	restart
+	;;
+
+    vfioGPU)
+        vfioGPU
+	;;
+    
+    amdGPU)
+        amdGPU
+	;;
+    
+    bindMounts)
+	bindMounts
+	;;
+    
+    noIdle)
+	noIdle     
+	;;
+    
+    status)
+        ;;
+esac
+exit 0
+

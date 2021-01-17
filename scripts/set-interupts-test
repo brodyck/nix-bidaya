@@ -1,0 +1,19 @@
+#! /usr/bin/env bash
+set -x
+
+#Where I don't want them to be
+grep -E "[0-9]:" /proc/interrupts | cut -b 3-4 | while read -r i ; do
+    #aMASK=00000f0f
+    aMASK=0000f0f0
+    echo $aMASK > /proc/irq/$i/smp_affinity
+done
+
+#Where I want interrupts to be
+grep -e "vfio" /proc/interrupts | cut -b 3-4 | while read -r i ; do
+    #aMASK=0000f0f0
+    aMASK=00000f0f 
+    echo $aMASK > /proc/irq/$i/smp_affinity
+done
+
+cpupower -c 4-7,12-15 idle-set -D 2
+irqbalance --banmod=0-3,8-11
