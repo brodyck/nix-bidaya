@@ -7,7 +7,7 @@ let
 nixInFolder = dir: map (x: dir + "/" + x) (attrNames (filterAttrs (name: _: hasSuffix ".nix" name) (readDir dir)));
 in
 {
-  imports = nixInFolder "/etc/nixos/cfg/virtualisation/lxc-containers";
+  imports = nixInFolder "/etc/nixos/cfg/virtualisation/lxc-configs";
   environment = {
     systemPackages = with pkgs; [
       lxc
@@ -31,9 +31,9 @@ in
     lxc = {
       enable = true;
       lxcfs.enable = true;
-      systemConfig = "";
-      defaultConfig = "";
-      usernetConfig = "";
+#      systemConfig = "";
+#      defaultConfig = "";
+#      usernetConfig = "";
     };
   };
   
@@ -45,9 +45,9 @@ in
   };
 
   users.groups = {
-#    libvirt = {
-#      members = [ "brody" ];
-#    };
+     lxc = {
+      members = [ "brody" ];
+    };
   };
 
 }

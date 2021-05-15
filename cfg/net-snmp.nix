@@ -14,10 +14,13 @@ let
 	 #mikrotik stuff -- SSL isn't an option. Maybe transport over SSH is? In any case; different user/pass for read/write
 	 wuser mikrotikw priv mikrotikw
 	 createUser mikrotikw SHA f*fzn"Ug%~9BNuQk AES \;qK7X,u4qd=GN9?	 
+
 	 ruser mikrotikr priv mikrotikr 
 	 createUser mikrotikr SHA !LV#brF4T3A5`ABu AES wUfXGFp=ws@{s<5N	 
+
 	 rouser brodyw auth brodyauth
 	 createUser brodyw SHA dyckdyck DES dyckdyck
+
 	 rocommunity brodysnmp12
       '';
   };

@@ -11,6 +11,13 @@ in
   services = {
     irqbalance.enable = false;
   };
+
+  environment = {
+    systemPackages = with pkgs; [
+      cairo # for generators
+      nixos-generators
+    ];
+  };
   
   boot = {
     kernelParams = [

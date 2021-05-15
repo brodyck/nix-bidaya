@@ -29,6 +29,21 @@
         name = "amd-navi-reset";
 	patch = ../patches/amd-navi-reset.patch;
       }
+      # this is for this
+      # https://github.com/gnif/vendor-reset
+      {
+        name = "vendor-reset-config";
+        patch = null;
+	extraConfig = ''
+	  FTRACE y
+	  KPROBES y
+	  PCI_QUIRKS y
+	  KALLSYMS y
+	  KALLSYMS_ALL y
+	  FUNCTION_TRACER y
+	'';
+      }
+      
     ];
 
     kernelModules = [
@@ -78,6 +93,8 @@
       options kvm_amd npt=1
     '';
   };
+
+
   
   virtualisation = {
     libvirtd = {

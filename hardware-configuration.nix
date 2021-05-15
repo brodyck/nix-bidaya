@@ -23,134 +23,63 @@
       fsType = "vfat";
     };
 
-  fileSystems."/disks/storage1" =
-    { device = "storage1";
+
+  fileSystems."/disks/storage1" = 
+    { device = "storage1/safe";
       fsType = "zfs";
       options = [ "nofail" ];
     };
 
-  fileSystems."/disks/storage1/coleson" =
-    { device = "storage1/coleson";
+  fileSystems."/disks/storage1/vms" = 
+    { device = "storage1/safe/vms";
       fsType = "zfs";
       options = [ "nofail" ];
     };
 
-  fileSystems."/disks/storage1/raelynn" =
-    { device = "storage1/raelynn";
+  fileSystems."/disks/storage1/secrets" = 
+    { device = "storage1/safe/secrets";
       fsType = "zfs";
       options = [ "nofail" ];
     };
 
-  fileSystems."/disks/storage1/sham" =
-    { device = "storage1/sham";
+  fileSystems."/disks/storage1/backups" = 
+    { device = "storage1/safe/backups";
       fsType = "zfs";
       options = [ "nofail" ];
     };
 
-  fileSystems."/disks/storage1/snapshots" =
-    { device = "storage1/snapshots";
+  fileSystems."/disks/storage1/books" = 
+    { device = "storage1/safe/books";
       fsType = "zfs";
       options = [ "nofail" ];
     };
 
-  fileSystems."/disks/storage1/thorin" =
-    { device = "storage1/thorin";
+  fileSystems."/disks/storage1/documents" = 
+    { device = "storage1/safe/documents";
       fsType = "zfs";
       options = [ "nofail" ];
     };
 
-  fileSystems."/disks/storage0" =
-    { device = "storage0";
+  fileSystems."/disks/storage1/music" = 
+    { device = "storage1/safe/music";
       fsType = "zfs";
       options = [ "nofail" ];
     };
 
-  fileSystems."/disks/storage0/minecraft-asstown" =
-    { device = "storage0/minecraft-asstown";
+  fileSystems."/disks/storage1/pictures" = 
+    { device = "storage1/safe/pictures";
       fsType = "zfs";
       options = [ "nofail" ];
     };
 
-  fileSystems."/disks/storage0/minecraft-dnd" =
-    { device = "storage0/minecraft-dnd";
+  fileSystems."/disks/storage1/torrents" = 
+    { device = "storage1/safe/torrents";
       fsType = "zfs";
       options = [ "nofail" ];
     };
 
-  fileSystems."/disks/storage0/minecraft-n-world" =
-    { device = "storage0/minecraft-n-world";
-      fsType = "zfs";
-      options = [ "nofail" ];
-    };
-
-  fileSystems."/disks/storage0/minecraft-sadworld" =
-    { device = "storage0/minecraft-sadworld";
-      fsType = "zfs";
-      options = [ "nofail" ];
-    };
-
-  fileSystems."/disks/storage0/win-srv-2019" =
-    { device = "storage0/win-srv-2019";
-      fsType = "zfs";
-      options = [ "nofail" ];
-    };
-
-  fileSystems."/disks/storage0/win10" =
-    { device = "storage0/win10";
-      fsType = "zfs";
-      options = [ "nofail" ];
-    };
-
-  fileSystems."/disks/storage2" =
-    { device = "storage2";
-      fsType = "zfs";
-      options = [ "nofail" ];
-    };
-
-  fileSystems."/disks/storage2/backups" =
-    { device = "storage2/backups";
-      fsType = "zfs";
-      options = [ "nofail" ];
-    };
-
-  fileSystems."/disks/storage2/books" =
-    { device = "storage2/books";
-      fsType = "zfs";
-      options = [ "nofail" ];
-    };
-
-  fileSystems."/disks/storage2/documents" =
-    { device = "storage2/documents";
-      fsType = "zfs";
-      options = [ "nofail" ];
-    };
-
-  fileSystems."/disks/storage2/music" =
-    { device = "storage2/music";
-      fsType = "zfs";
-      options = [ "nofail" ];
-    };
-
-  fileSystems."/disks/storage2/pictures" =
-    { device = "storage2/pictures";
-      fsType = "zfs";
-      options = [ "nofail" ];
-    };
-
-  fileSystems."/disks/storage2/torrents" =
-    { device = "storage2/torrents";
-      fsType = "zfs";
-      options = [ "nofail" ];
-    };
-
-  fileSystems."/disks/storage2/videos" =
-    { device = "storage2/videos";
-      fsType = "zfs";
-      options = [ "nofail" ];
-    };
-
-  fileSystems."/disks/storage2/videos-share" =
-    { device = "storage2/videos-share";
+  fileSystems."/disks/storage1/videos-share" = 
+    { device = "storage1/safe/videos-share";
       fsType = "zfs";
       options = [ "nofail" ];
     };
@@ -217,6 +146,12 @@
 
   fileSystems."/disks/ssd-raid0-0/win10" =
     { device = "ssd-raid0-0/win10";
+      fsType = "zfs";
+      options = [ "nofail" ];
+    };
+
+  fileSystems."/disks/ssd-raid0-0/macbs" =
+    { device = "ssd-raid0-0/macbs";
       fsType = "zfs";
       options = [ "nofail" ];
     };

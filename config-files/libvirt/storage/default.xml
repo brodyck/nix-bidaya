@@ -1,0 +1,25 @@
+<!--
+WARNING: THIS IS AN AUTO-GENERATED FILE. CHANGES TO IT ARE LIKELY TO BE
+OVERWRITTEN AND LOST. Changes to this xml configuration should be made using:
+  virsh pool-edit default
+or other application using the libvirt API.
+-->
+
+<pool type='dir'>
+  <name>default</name>
+  <uuid>74786006-cac2-4a7d-960d-cb43461bfc08</uuid>
+  <capacity unit='bytes'>45248098304</capacity>
+  <allocation unit='bytes'>17730576384</allocation>
+  <available unit='bytes'>27517521920</available>
+  <source>
+  </source>
+  <target>
+    <path>/var/lib/libvirt/images</path>
+    <permissions>
+      <mode>0755</mode>
+      <owner>0</owner>
+      <group>0</group>
+      <label>system_u:object_r:virt_image_t:s0</label>
+    </permissions>
+  </target>
+</pool>

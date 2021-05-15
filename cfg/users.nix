@@ -11,7 +11,7 @@
 	createHome = true;
 	home = "/home/brody";
 	initialPassword = "initialpw";
-	extraGroups = [ "wheel" ];
+	extraGroups = [ "wheel" "lxd" "kvm" "libvirt" ];
         subUidRanges = [{
 	  startUid = 100000;
 	  count = 65536;

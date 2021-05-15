@@ -1,5 +1,5 @@
 { stdenv, autoreconfHook, fetchFromGitHub, zlib, libibmad, openssl }:
-
+ 
 stdenv.mkDerivation rec {
   pname = "mstflint";
   version = "4.14.0-1";

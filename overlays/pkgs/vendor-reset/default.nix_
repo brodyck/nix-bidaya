@@ -1,0 +1,73 @@
+{ stdenv, lib, fetchFromGitHub, pkgs, bc, nukeReferences }:
+ let
+  kernel = pkgs.linuxPackages_latest.kernel;
+  version = "${kernel.version}";
+in
+stdenv.mkDerivation rec {
+  name = "vendor-reset";
+  NIX_DEBUG = 6;
+  src = fetchFromGitHub {
+    owner = "gnif";
+    repo = "vendor-reset";
+    rev = "225a49a40941e350899e456366265cf82b87ad25";
+    sha256 = "071zd8slra0iqsvzqpp6lcvg5dql5hkn161gh9aq34wix7pwzbn5";
+  };
+
+  sourceRoot = "/build/source";
+  hardeningDisable = [ "all" ]; 
+  nativeBuildInputs = [
+    kernel.moduleBuildDependencies
+    nukeReferences
+    bc
+  ];
+
+  makeFlags = [
+#    "-d"
+    "KERNELRELEASE=${kernel.modDirVersion}"
+#    "KERNEL_DIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
+    "KDIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
+#    "INSTALL_MOD_PATH=$(out)"
+#    "M=/build/source"
+  ];
+
+#  NIX_CFLAGS_COMPILE="-Wno-error=incompatible-pointer-types";
+
+  prePatch = ''
+    ls -lah /
+    ls -lah /build
+    ls -lah /build/*
+    ls -lah /build/*/*
+    ls -lah /build/*/*/*
+    ls -lah /build/*/*/*/*
+    ls -lah /build/*/*/*/*/*
+    ls -lah /build/*/*/*/*/*/*
+    cat Makefile
+    substituteInPlace ./Makefile --replace "/lib/modules/\$(KVER)/build" "${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
+    substituteInPlace ./Makefile --replace '$(INSTALL_MOD_PATH)' "$(out)"
+#    substituteInPlace ./Makefile --replace "M=\$(PWD)" ""
+    cat Makefile
+    set -x
+  '';
+
+  postBuild = ''
+    ls -lah /build/source/src
+  '';
+
+# doCheck = false;
+
+  preInstall = ''mkdir -p $(out)'';
+
+  postInstall = ''nuke-refs $(find $out -name "*.ko")'';
+  
+  meta = with lib; {
+    description = "A kernel module to allow hardware reset of AMD Navi GPUs";
+    homepage = "https://github.com/gnif/vendor-reset";
+    license = licenses.gpl2;
+    maintainers = [ maintainers.makefu ];
+    platforms = platforms.linux;
+  };
+
+#  boot.initrd.availableKernelModules = [ "vendor-reset" ];
+#  boot.initrd.kernelModules = [ "vendor-reset" ];  
+  
+}

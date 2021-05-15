@@ -114,11 +114,14 @@
 #      mstpd
       debootstrap
       linuxHeaders
-      mstflint-414
+#      mstflint-414
       jdk
       file
       tshark
       bind
+      python3
+      kpcli
+#      vendor-reset
     ];
     sessionVariables = {
       EDITOR = "emacs";

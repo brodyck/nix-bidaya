@@ -5,9 +5,6 @@
 
   boot = {
     #extraTTYs = [ "ttyS0" ];
-    kernelPatches = [
-    # Just so everyone knows, the value of 'patch' MUST be unquoted. No exceptions.
-    ];
    
     kernelPackages = pkgs.linuxPackages_latest;
 

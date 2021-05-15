@@ -24,12 +24,10 @@
 
     '';
   };
-  networking.firewall = {
-    allowedTCPPorts = [
-
-    ];
-    allowedUDPPorts = [
-
-    ];
-  };    
+#  networking.firewall = {
+#    allowedTCPPorts = [
+#    ];
+#    allowedUDPPorts = [
+#    ];
+#  };    
 }
