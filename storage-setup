@@ -1,0 +1,378 @@
+#! /usr/bin/env bash
+#set -x
+
+# ZFS Structure:
+# safe # encrypted
+#   - storage # OS independent
+#     - all stuff
+
+storageName=${1:-ERROR}
+
+# declaring associative arrays
+#function storeAssocArray(){
+    declare -A storeDirs
+    declare -A storeDatasets
+#}
+#storeAssocArray
+
+
+# storage3
+#DISK1ID=ata-ST8000VN004-2M2101_WSD0QQ77
+#DISK2ID=ata-ST8000VN004-2M2101_WSD1BLV3
+# storage1
+#DISK1ID=ata-ST8000VN004-2M2101_WSD1M61C
+#DISK2ID=ata-ST8000VN004-2M2101_WSD0XWLF
+# storage2
+#DISK1ID=ata-ST4000VN008-2DR166_ZGY68E1C
+#DISK2ID=ata-ST4000VN008-2DR166_ZGY79BM9
+#DISKS=( ${DISK1ID} ${DISK2ID} )
+
+# where all my storageN mounts go
+
+
+# nixos dir to drop the .nix files
+nixDiskDir=/etc/nixos/cfg/disks
+
+# core pool
+RPOOL=${storageName}
+# currently storage/safe
+RPSAFE=${RPOOL}/safe
+
+BASEDIR=/disks
+# Currently /disks/storageN
+storageDir=${BASEDIR}/${storageName}
+
+function dirsxFunc(){
+    echo dirsFunc
+#    set -x
+    # Mounts/pools under storageN
+    dirsx=(
+	vms
+	secrets
+	backups
+	books
+	documents
+	music
+	pictures
+	torrents
+	videos
+	'videos-share'   
+	'install-files'
+	'high-compression'
+    )
+    # the total amount of items in dirsx
+    total=$(echo ${!dirsx[@]} | wc -w)
+    set +x
+}
+dirsxFunc
+
+function dirPathSetup(){
+    echo dirPathSetup
+    # for items in dirsx
+#    set -x
+    for dirx in ${dirsx[@]}
+    do
+	# This key in storeDirs, which is the current item, equals this storage path
+	storeDirs[${dirx}]="${storageDir}/${dirx}"
+	# This key in storeDatasets, which is the current item, equals this dataset path
+	storeDatasets[${dirx}]="${RPSAFE}/${dirx}"	
+    done
+#    set +x
+}
+dirPathSetup
+
+function userDirsxFunc(){
+    echo userDirsxFunc
+#    set -x
+    userDirsx=(
+	sham
+	raelynn
+	coleson
+	thorin
+    )
+    ## same as above
+    #    total=$(echo ${!userDirsx[@]} | wc -w)
+    unset -v dirx
+    #    set +x
+}
+userDirsxFunc
+
+function userDirPathSetup(){
+    echo userDirPathSetup
+#    set -x
+    for userDirx in ${userDirsx[@]}; do
+	# This key in storeDirs, which is the current item, equals this storage path
+	storeDirs[${userDirx}]="${storageDir}/user/${userDirx}"
+	# This key in storeDatasets, which is the current item, equals this dataset path
+	storeDatasets[${userDirx}]="${RPSAFE}/user/${userDirx}"
+    done
+    unset -v userDirx
+#    set +x
+}
+userDirPathSetup
+
+# minimum options
+OPT="-O dedup=off \
+-O recordsize=8k \
+-O relatime=on \
+-O xattr=sa \
+-O acltype=posixacl \
+-O devices=off \
+-O canmount=off \
+-O overlay=on \
+-O mountpoint=none \
+-O ${COMPRESSOPT}"
+
+COMPRESSOPT="compression=gzip-6"
+HIGHCOMPRESSOPT="compression=gzip-9"
+
+# minimum features
+FEAT="-o ashift=12 -d \
+-o feature@async_destroy=enabled \
+-o feature@bookmarks=enabled \
+-o feature@embedded_data=enabled \
+-o feature@empty_bpobj=enabled \
+-o feature@enabled_txg=enabled \
+-o feature@extensible_dataset=enabled \
+-o feature@filesystem_limits=enabled \
+-o feature@hole_birth=enabled \
+-o feature@large_blocks=enabled \
+-o feature@lz4_compress=enabled \
+-o feature@spacemap_histogram=enabled \
+-o feature@zpool_checkpoint=enabled \
+-o feature@encryption=enabled"
+
+# options that can be set per dataset
+MOUNTDSETOPT="-o mountpoint=legacy"
+SUBDSETOPT="-o canmount=noauto -o mountpoint=legacy"
+
+# root pool options
+RPOPT="${OPT}"
+RPFEAT="${FEAT}"
+
+KEYFOLDER="/disks"
+KEYFILE="${KEYFOLDER}/${storageName}-key"
+SAFEDSETOPT="${MOUNTDSETOPT} \
+-o com.sun:auto-snapshot=false \
+-o encryption=aes-256-gcm \
+-o keyformat=passphrase \
+-o keylocation=file://${KEYFILE} \
+-o pbkdf2iters=500000 "
+
+function makeAndSendKey(){
+    echo makeAndSendKey
+    dd if=/dev/random of=${KEYFILE} bs=512 count=1 && wait
+    scp ${KEYFILE} pi@192.168.69.69:/home/pi/
+    sync -f && wait
+    zfs load-key -a
+}
+
+function destroyOldZfs(){
+    echo destroyOldZfs
+    for dirx in ${dirsx[@]}; do
+	umount ${storeDirs[${dirx}]} || echo "Nothing mounted."
+	zfs destroy	${storeDatasets[${dirx}]} || echo "No dataset to destroy."
+	rmdir ${storeDirs[${dirx}]} || echo "No directory to delete."
+    done
+    zfs destroy ${RPSAFE}/safe || echo "No encrypted directory to destroy."
+    zpool destroy ${RPOOL} || echo "No pool destroyed"
+}
+
+function runOnAll(){
+    for DISK in ${DISKS[@]}; do
+	${1} ${DISK}
+	echo "$?"
+    done
+}
+
+function unmountAllZfs(){
+    echo unmountAllZfs
+# unmount old zfs partitions in case
+    zfs umount -a
+    zpool export -a
+}
+
+function createZfsPool(){
+    echo createZfsPool
+    # create the pool with the two disks in mirrored config with the root-pool options and features
+    if ! grep -q -e "${RPOOL}" <<< $(zpool list)
+    then
+	zpool create -f \
+	      ${RPOPT} \
+	      ${RPFEAT} \
+	      ${RPOOL} mirror \
+	      "${DISK1ID}" \
+	      "${DISK2ID}" && wait
+	
+	# enable encryption seperately because there may be cases where i don't want this.   
+	zpool set feature@encryption=enabled ${RPOOL}
+    else
+	printf "\n\n'${RPOOL}' already exists.\n\n"
+    fi
+}
+
+# args:
+# 1. the dataset you're checking
+# 2. the value you're setting on a per-dataset basis
+# 3. the value the dataset name has to match to apply the value
+function customOpt(){
+    echo customOpt
+    local datasetName=${1:-ERROR}
+    local customOptValue=${2:-ERROR}
+    local matchValue=${3:-ERROR}
+    #    set -x	
+    if [[ "${datasetName}" =~ ${matchValue} ]]
+    then
+	zfs set ${customOptValue} "${datasetName}" && printf "\nCustom option '${customOptValue}' was applied to '${datasetName}'\n" && return 0
+	printf "\nError setting '${customOptValue}' on '${datasetName}'\n" && return 1
+    elif ! [[ "${datasetName}" =~ ${matchValue} ]]
+    then
+#	printf "\nNo custom opts for '${datasetName}'\n"
+	return 0
+    fi
+    return 99
+    set +x
+}
+
+# args:
+# 1. opts for this dataset
+# 2. full name of the dataset
+# 3. directory where we will mount the dataset
+function createDataset(){
+    echo createDataset
+    local subsetOpt="${1:-ERROR}"
+    local datasetName="${2:-ERROR}"
+    local datasetDir="${3:-ERROR}"
+    # create the dataset with the sub-directory options
+    zfs create -p ${subsetOpt} ${datasetName} || echo "Can't create '${datasetName}' because it already exists or a name is wrong."
+    # make the directory that we're going to mount to
+    mkdir -p ${datasetDir} || echo "Can't '${datasetDir}' because it already exists."
+    # mount to the directory that we just made 
+    mount -t zfs ${datasetName} ${datasetDir} || echo "Can't mount '${datasetName}' to '${datasetDir}' because mountpoint doesn't exist or is in use."
+    return 0
+}
+
+function createDatasets(){
+    echo createDatasets
+    local isUserDir=${1:-no}
+    if ! grep -q -e "${RPSAFE}" <<< $(zfs list)
+    then
+	printf "\n'${RPSAFE}' created.\n"
+	createDataset "${SAFEDSETOPT}" "${RPSAFE}" "${storageDir}"
+    else
+	printf "\n'${RPSAFE}' already exists.\n"
+    fi
+    # for the items in dirsx
+    unset -v dirx
+    for dirx in ${dirsx[@]}; do
+	if ! grep -q -e "${storeDatasets[${dirx}]}" <<< "$(zfs list)"
+	then
+	    printf "\n'${storeDatasets[${dirx}]}' created.\n"	    
+	    createDataset "${SUBDSETOPT}" "${storeDatasets[${dirx}]}" "${storeDirs[${dirx}]}"
+	else
+	    printf "\n'${storeDatasets[${dirx}]}' already exists.\n"
+	fi
+
+	customOpt "${storeDatasets[${dirx}]}" "${HIGHCOMPRESSOPT}" "high-compression"
+    done
+    unset -v dirx
+    if [[ ${isUserDir} == 'yes' ]]
+    then
+	unset -v userDirx
+	for userDirx in ${userDirsx[@]}; do
+	    if ! grep -q -e "${storeDatasets[${userDirx}]}" <<< $(zfs list)
+	    then
+		printf "\n'${storeDatasets[${userDirx}]}' created.\n"
+    		createDataset "${SUBDSETOPT}" "${storeDatasets[${userDirx}]}" "${storeDirs[${userDirx}]}"
+	    else
+		printf "\n'${storeDatasets[${userDirx}]}' already exists.\n"
+	    fi
+	done
+	unset -v userDirx
+    fi
+    
+}
+
+function dirWriteNix(){
+    echo dirWriteNix
+    unset -v dirx    
+    for dirx in ${dirsx[@]}; do
+	printf "
+  fileSystems.\"${storeDirs[${dirx}]}\" = { 
+    device = \"${storeDatasets[${dirx}]}\";
+    fsType = \"zfs\";
+    options = [ \"nofail\" ];
+  };" >> ${nixDiskDir}/${storageName}.nix
+    done
+    unset -v dirx
+} 
+
+function userDirWriteNix(){
+    echo userDirWriteNix
+    unset -v userDirx
+    printf "\n  # User directories" >> ${nixDiskDir}/${storageName}.nix
+    printf "
+  fileSystems.\"${storageDir}/user\" = { 
+    device = \"${RPSAFE}/user\";
+    fsType = \"zfs\";
+    options = [ \"nofail\" ];
+  };" >> ${nixDiskDir}/${storageName}.nix    
+    for userDirx in ${userDirsx[@]}; do
+       printf "
+  fileSystems.\"${storeDirs[${userDirx}]}\" = { 
+    device = \"${storeDatasets[${userDirx}]}\";
+    fsType = \"zfs\";
+    options = [ \"nofail\" ];
+  };" >> ${nixDiskDir}/${storageName}.nix
+    done
+    unset -v userDirx
+}
+
+function createNixFiles(){
+    echo createNixFiles
+    local isUserDir=${1:-no}
+    printf "{ config, lib, pkgs, modulesPath, ... }:
+#let
+#storageName=${storageName}
+#in
+{
+  fileSystems.\"${storageDir}\" = { 
+    device = \"${RPSAFE}\";
+    fsType = \"zfs\";
+    options = [ \"nofail\" ];
+  };" > ${nixDiskDir}/${storageName}.nix
+
+    if [[ ${isUserDir} == 'yes' ]]
+    then
+	userDirWriteNix
+	dirWriteNix
+    else
+	dirWriteNix
+    fi
+        
+    printf "\n\n}" >> ${nixDiskDir}/${storageName}.nix
+    printf "\n\nSee output in ${nixDiskDir}/${storageName}.nix\n\n"
+}
+
+if [[ ${storageName} == "ERROR" ]]
+then
+    printf "\n\nNo args\n\n"
+    exit
+fi
+
+
+#unmountAllZfs
+#createZfsPool
+if [[ ${storageName} == "storage1" ]]
+then
+#    createDatasets yes
+    createNixFiles yes    
+else
+#    createDatasets
+    createNixFiles    
+fi
+
+#makeAndSendKey && zfs load-key -a
+#destroyOldZfs
+
+exit "${?}"

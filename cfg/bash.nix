@@ -8,6 +8,12 @@
     shellInit = ''
     PATH=$PATH:/home/brody/minecraft
     '';
+
+
+
+
+
+
     promptInit = ''
       PATH=$PATH:/home/brody/minecraft    
       shopt -s histappend
@@ -15,18 +21,28 @@
       HISTSIZE=10000
       HISTFILESIZE=20000
       shopt -s checkwinsize
-      function chownd(){
-        local topDir="''${1}"
-        local chmodArgs="''${2}"
-        #if [[ -n "''${1}" ]] | [[ -n "''${2}" ]] | [[ "''${!@}" -gt 2 ]]
-        if ! [[ "''${@}" -eq 2 ]]
+      function chmodstuff(){
+        local typeOf="''${1:-nothing}"
+        local topDir="''${2:-nothing}"
+        local chmodArgs="''${3:-nothing}"
+        if ! [[ "''${#}" -eq 3 ]] || ! [[ "''${1}" =~ (b|d) ]] || ! [[ -d "''${topDir}" ]]
         then
-          printf '\n\nRemember to quote args.
-	  \nCommand is:
-	  \nfind "''${1}" -type d -print0 | xargs -0 chmod "''${2}"\n\n'
+          printf "
+No args or bad input.
+    Recursively chmods all of \e[1;34mdirectories\e[0m or \e[1;32mfiles\e[0m after path. Remember to quote arg 3.
+    \n\nCommand is:
+    find \''${2} -type \''${1} -print0 | xargs -0 chmod \''${3}
+
+    For args:
+      1. Must be d or f, for directory or file -- Supplied: ''${typeOf}
+      2. Must be the path to a directory where you want to run this command -- Supplied: ''${topDir}
+      3. Must be quoted args for chmod -- Supplied: ''${chmodArgs}
+"
+	  return 0
+        else
+          find "''${2}" -type "''${1}" -print0 | xargs -0 chmod "''${3}"
 	  return 1
-        fi
-        find "''${1}" -type d -print0 | xargs -0 chmod "''${2}"
+	fi
       }
       # Provide a nice prompt if the terminal supports it.
       if [ "$TERM" != "dumb" -o -n "$INSIDE_EMACS" ]; then
