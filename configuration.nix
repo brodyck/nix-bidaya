@@ -121,6 +121,7 @@
       bind
       python3
       kpcli
+      fzf
 #      vendor-reset
     ];
     sessionVariables = {

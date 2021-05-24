@@ -6,7 +6,7 @@
     ];
   };
   services.transmission = {
-    enable = false;
+    enable = true;
     user = "brody";
     group = "brody";    
     port = 8881;

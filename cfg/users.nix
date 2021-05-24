@@ -1,5 +1,6 @@
 { config, lib, pkgs, ... }:
 {
+  nix.trustedUsers = [ "brody" "root" ];
   users = {
     mutableUsers = true;
     users = {
